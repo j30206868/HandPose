@@ -151,31 +151,6 @@ def draw_parts(image, parts, circle_color=(0,127,0), font_color=(0,255,0), font_
             cv2.circle(image, coord, 10, circle_color)
             cv2.putText(image, str(part_id), coord, cv2.FONT_HERSHEY_COMPLEX, font_scale, font_color)
 
-
-def load_numpy_weights(sess, numpy_weights_dir, save_path):
-    if (os.path.isdir(numpy_weights_dir)):
-        print('numpy_weights_dir %s doesn\'t exist' % numpy_weights_dir)
-
-    for variable in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES):
-        layer_name = variable.name[:variable.name.find('/')]
-        if (os.path.exists(os.path.join(numpy_weights_dir, "W_%s.npy" % layer_name))):
-            print('Loading %s' % variable)
-            if ('kernel' in variable.name):
-                w = np.array(np.load(os.path.join(numpy_weights_dir, "W_%s.npy" % layer_name)).tolist())
-                sess.run(variable.assign(w))
-            elif ('bias' in variable.name):
-                b = np.array(np.load(os.path.join(numpy_weights_dir, "b_%s.npy" % layer_name)).tolist())
-                sess.run(variable.assign(b))
-            else:
-                print("Load variable %s failed, exit\n" % variable.name);
-                sys.exit()
-        else:
-            print("Variable %s weight file not found, exit\n" % variable.name);
-            sys.exit()
-    # save pretrained weight
-    saver = tf.train.Saver()
-    saver.save(sess, save_path)
-
 class HandPose:
     def __init__(self, input_tensor):
         self.input_tensor = input_tensor
@@ -183,11 +158,13 @@ class HandPose:
         ###
         self.openpose, self.netscale = get_tfopenpose_hand_model(input_tensor)
         self.openpose_var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
-        saver = tf.train.Saver(var_list=self.openpose_var_list)
-        saver.restore(self.sess, "checkpoints/pretrain")
-        print('OpenPose pretrain weights are LOADED!')
         ###
         self.is_pred_init = False
+
+    def load_weights(self, tfckpt_path):
+        saver = tf.train.Saver(var_list=self.openpose_var_list)
+        saver.restore(self.sess, tfckpt_path)
+        print('OpenPose pretrain weights are LOADED!')
         
     def init_predict_model(self):
         with tf.variable_scope('CWZHandPosePredict'):
@@ -245,8 +222,3 @@ class HandPose:
             plt.show()
 
         return parts
-# input_tensor = tf.placeholder(tf.float32, shape=(None, None, None,3), name='image')
-# x, net_down_scale = get_tfopenpose_hand_model(input_tensor)
-# sess = tf.Session(graph=tf.get_default_graph())
-# sess.run(tf.global_variables_initializer())
-# load_numpy_weights(sess, "./openpose_handmodel_numpy_weight", "./openpose_hand_pretrain")

@@ -8,9 +8,11 @@ caffe_model = './pose_iter_102000.caffemodel'
 caffe_proto = './pose_deploy.prototxt'
 
 def save_caffe_numpy_weights(caffe_weights_dir, convert_to_tf_order=True):
+    print('\nCaffe Model Summary:')
     for layer_name, blob in net.blobs.items():
-        print(layer_name, blob.data.shape)
+        print(' ',layer_name, blob.data.shape)
 
+    print('\nStart save caffe model into numpy weights...')
     # write out weight matrices and bias vectors
     for layer_name, varaibles in net.params.items():
         kernel = varaibles[0].data

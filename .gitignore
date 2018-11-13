@@ -1,0 +1,5 @@
+*.prototxt
+*.caffemodel
+checkpoints/
+numpy_weights/
+__pycache__/
