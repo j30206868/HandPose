@@ -215,7 +215,7 @@ class HandPose:
 
             if show_removed:
                 interchange_yx_to_xy_and_scale(deleted_parts, self.netscale)  
-                draw_parts(image, deleted_parts, (0,0,127), (0,0,255))
+                draw_parts(image, deleted_parts, (127,0,0), (255,0,0))
                 
             plt.figure(figsize=(12,12))
             plt.imshow(image)

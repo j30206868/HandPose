@@ -3,3 +3,8 @@
 checkpoints/
 numpy_weights/
 __pycache__/
+*.jpg
+*.png
+*.bmp
+*.jpeg
+*.tiff
