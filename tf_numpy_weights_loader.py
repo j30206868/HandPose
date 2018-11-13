@@ -1,8 +1,6 @@
 import tensorflow as tf
 import numpy as np
-import cv2
-
-from model import get_tfopenpose_hand_model
+import os
 
 def load_numpy_weights(sess, numpy_weights_dir, var_list=None):
     '''Load numpy weights into tensorflow variable
@@ -35,29 +33,21 @@ def load_numpy_weights(sess, numpy_weights_dir, var_list=None):
 
     for variable in var_list:
         layer_name = variable.name[:variable.name.find('/')]
-        if (os.path.exists(os.path.join(numpy_weights_dir, "W_%s.npy" % layer_name))):
-            print('Loading %s' % variable)
-            if ('kernel' in variable.name):
-                w = np.array(np.load(os.path.join(numpy_weights_dir, "W_%s.npy" % layer_name)).tolist())
-                sess.run(variable.assign(w))
-            elif ('bias' in variable.name):
-                b = np.array(np.load(os.path.join(numpy_weights_dir, "b_%s.npy" % layer_name)).tolist())
-                sess.run(variable.assign(b))
-            else:
-                print("Load variable %s failed, exit\n" % variable.name);
-                sys.exit()
+        print('Loading %s' % variable)
+        path = ''
+        if ('kernel' in variable.name):
+            path = os.path.join(numpy_weights_dir, "W_%s.npy" % layer_name)
+        elif ('bias' in variable.name):
+            path = os.path.join(numpy_weights_dir, "b_%s.npy" % layer_name)
+        else:
+            print("Variable %s is not a kernel or bias weights, loading failed and exit\n" % variable.name)
+            sys.exit()
+
+        print('\tfrom %s' % path)
+        if os.path.exists(path):
+            w = np.array(np.load(path).tolist())
+            print('\tnumpy weight array shape: ', w.shape)
+            sess.run(variable.assign(w))
         else:
             print("Variable %s weight file not found, exit\n" % variable.name);
             sys.exit()
-    
-
-input_tensor = tf.placeholder(tf.float32, shape=(None, None, None,3), name='image')
-# Build OpenPose Hand Detection model in Tensorflow
-x, net_down_scale = get_tfopenpose_hand_model(input_tensor)
-sess = tf.Session(graph=tf.get_default_graph())
-sess.run(tf.global_variables_initializer())
-# Load numpy weights to variables according to varaible name
-load_numpy_weights(sess, 'numpy_weights/', var_list=None)
-# save to meta graph
-saver = tf.train.Saver()
-saver.save(sess, "checkpoints/pretrain")
