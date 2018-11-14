@@ -8,6 +8,6 @@ input_tensor = tf.placeholder(tf.float32, shape=(None, None, None,3), name='imag
 handpose = HandPose(input_tensor)
 handpose.load_weights('checkpoints/pretrain')
 
-TEST_IMAGE_PATH = 'D:/wzchen/PythonProj/tf-openpose/images/hand1.jpg'
-image_orig = cv2.cvtColor(cv2.imread(TEST_IMAGE_PATH), cv2.COLOR_BGR2RGB)
-handpose.predict(image_orig, 2, True, True)
+TEST_IMAGE_PATH = 'hand1.jpg'
+image_orig = cv2.imread(TEST_IMAGE_PATH)
+handpose.predict(image_orig, 1.5, True, True)

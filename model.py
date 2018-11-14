@@ -201,7 +201,7 @@ class HandPose:
         image = cv2.resize(image_orig, (0,0), fx=scale, fy=scale) 
         net_out = self.sess.run(self.peaks_tensor, feed_dict={self.input_tensor: np.expand_dims( image /256 -0.5 ,0)})[0]
 
-        peaks = np.argwhere(net_out > 0.1)
+        peaks = np.argwhere(net_out >= 0.1)
         parts = [[] for i in range(22)]
         for y, x, part_id in peaks:
             # y = peak[0], x = peak[1], part_id = peak[2]
@@ -215,8 +215,9 @@ class HandPose:
 
             if show_removed:
                 interchange_yx_to_xy_and_scale(deleted_parts, self.netscale)  
-                draw_parts(image, deleted_parts, (127,0,0), (255,0,0))
+                draw_parts(image, deleted_parts, (0,0,127), (0,0,255))
                 
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             plt.figure(figsize=(12,12))
             plt.imshow(image)
             plt.show()
